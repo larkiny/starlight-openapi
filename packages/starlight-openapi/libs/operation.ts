@@ -95,7 +95,7 @@ export function getWebhooksOperations(document: Schema['document']): PathItemOpe
         operation,
         pathItem,
         slug: `webhooks/${slug(operationId)}`,
-        title: operation.summary ?? operationId,
+        title: operationId,
       })
     }
   }
