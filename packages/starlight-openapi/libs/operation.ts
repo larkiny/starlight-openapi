@@ -43,7 +43,7 @@ export function getOperationsByTag(document: Schema['document']) {
             ? `operations/${operationIdSlug}/${slug(method)}`
             : `operations/${operationIdSlug}`,
           title:
-            operation.summary ?? (isDuplicateOperationId ? `${operationId} (${method.toUpperCase()})` : operationId),
+            isDuplicateOperationId ? `${operationId} (${method.toUpperCase()})` : operationId,
         })
 
         operationsByTag.set(tag, operations)
@@ -51,13 +51,18 @@ export function getOperationsByTag(document: Schema['document']) {
     }
   }
 
-  if (document.tags) {
-    const orderedTags = new Map(document.tags.map((tag, index) => [tag.name, { index, tag }]))
-    const operationsByTagArray = [...operationsByTag.entries()].sort(([tagA], [tagB]) => {
-      const orderA = orderedTags.get(tagA)?.index ?? Number.POSITIVE_INFINITY
-      const orderB = orderedTags.get(tagB)?.index ?? Number.POSITIVE_INFINITY
+  // Sort the entries alphabetically by operationId
+  for (const [tag, operations] of operationsByTag.entries()) {
+    operations.entries.sort((a, b) => a.title.localeCompare(b.title))
+    operationsByTag.set(tag, operations)
+  }
 
-      return orderA - orderB
+  if (document.tags) {
+    // Sort the tags alphabetically by name
+    const sortedTags = document.tags.slice().sort((a, b) => a.name.localeCompare(b.name))
+    const orderedTags = new Map(sortedTags.map((tag, index) => [tag.name, { index, tag }]))
+    const operationsByTagArray = [...operationsByTag.entries()].sort(([tagA], [tagB]) => {
+      return tagA.localeCompare(tagB)
     })
 
     operationsByTag.clear()
